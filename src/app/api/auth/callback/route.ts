@@ -8,17 +8,31 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error')
 
   if (error) {
-    console.error('Spotify callback error:', error)
+    console.error('[spotify callback] Spotify returned error:', error)
     return NextResponse.redirect(`${origin}/feed?error=spotify_denied`)
   }
 
   if (!code) {
+    console.error('[spotify callback] Missing code')
     return NextResponse.redirect(`${origin}/feed?error=missing_code`)
   }
 
+  const clientId = process.env.SPOTIFY_CLIENT_ID
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
   const redirectUri =
-    process.env.SPOTIFY_REDIRECT_URI ||
-    `${origin}/api/auth/callback`
+    process.env.SPOTIFY_REDIRECT_URI || `${origin}/api/auth/callback`
+
+  console.log('[spotify callback] Env check:', {
+    hasClientId: Boolean(clientId),
+    hasClientSecret: Boolean(clientSecret),
+    redirectUri,
+    clientIdStart: clientId?.slice(0, 6),
+  })
+
+  if (!clientId || !clientSecret) {
+    console.error('[spotify callback] Missing Spotify env vars')
+    return NextResponse.redirect(`${origin}/feed?error=missing_spotify_env`)
+  }
 
   try {
     const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
@@ -26,9 +40,7 @@ export async function GET(request: NextRequest) {
       headers: {
         Authorization:
           'Basic ' +
-          Buffer.from(
-            `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-          ).toString('base64'),
+          Buffer.from(`${clientId}:${clientSecret}`).toString('base64'),
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
@@ -41,7 +53,7 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json()
 
     if (!tokenResponse.ok) {
-      console.error('Spotify token error:', tokenData)
+      console.error('[spotify callback] Spotify token error:', tokenData)
       return NextResponse.redirect(`${origin}/feed?error=spotify_token_failed`)
     }
 
@@ -54,7 +66,7 @@ export async function GET(request: NextRequest) {
     const spotifyProfile = await profileResponse.json()
 
     if (!profileResponse.ok) {
-      console.error('Spotify profile error:', spotifyProfile)
+      console.error('[spotify callback] Spotify profile error:', spotifyProfile)
       return NextResponse.redirect(`${origin}/feed?error=spotify_profile_failed`)
     }
 
@@ -90,7 +102,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (userError) {
-      console.error('User upsert error:', userError)
+      console.error('[spotify callback] User upsert error:', userError)
       return NextResponse.redirect(`${origin}/feed?error=user_save_failed`)
     }
 
@@ -122,7 +134,7 @@ export async function GET(request: NextRequest) {
 
     return response
   } catch (error) {
-    console.error('Spotify callback crash:', error)
+    console.error('[spotify callback] Callback crash:', error)
     return NextResponse.redirect(`${origin}/feed?error=spotify_callback_failed`)
   }
 }
