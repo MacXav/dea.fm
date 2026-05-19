@@ -4,14 +4,14 @@ import { motion } from 'framer-motion'
 
 export default function Login() {
   const handleLogin = () => {
-    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID
+    const clientId = process.env.SPOTIFY_CLIENT_ID
 
     if (!clientId) {
       console.error('Missing Spotify Client ID')
       return
     }
 
-    const redirectUri = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI!
+    const redirectUri = process.env.SPOTIFY_REDIRECT_URI!
 
     const scopes =
       'user-read-private user-read-email playlist-read-private playlist-read-collaborative user-library-read'
