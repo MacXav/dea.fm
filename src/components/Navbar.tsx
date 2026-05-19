@@ -36,31 +36,7 @@ export default function Navbar() {
     }`
 
   const loginWithSpotify = () => {
-    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID
-    const redirectUri = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI
-
-    if (!clientId || !redirectUri) {
-      alert('Spotify login is not configured.')
-      return
-    }
-
-    const state = crypto.randomUUID()
-
-    sessionStorage.setItem('spotify_auth_state', state)
-    localStorage.setItem('spotify_auth_state', state)
-
-    const scopes = ['user-read-email', 'user-read-private'].join(' ')
-
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: clientId,
-      scope: scopes,
-      redirect_uri: redirectUri,
-      state,
-      show_dialog: 'true',
-    })
-
-    window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`
+    window.location.href = '/api/auth/login'
   }
 
   const logout = async () => {
