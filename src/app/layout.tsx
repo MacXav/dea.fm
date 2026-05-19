@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import Navbar from '@/components/Navbar'
+import { SpotifyPlayerProvider } from '@/components/SpotifyPlayerProvider'
+import GlobalSpotifyPlayer from '@/components/GlobalSpotifyPlayer'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -15,7 +17,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Music App',
+  title: 'dea.fm',
   description: 'Music social app',
 }
 
@@ -29,9 +31,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-black text-white`}
       >
-        <Navbar />
-
-        <ThemeProvider>{children}</ThemeProvider>
+        <SpotifyPlayerProvider>
+          <ThemeProvider>
+            <Navbar />
+            {children}
+            <GlobalSpotifyPlayer />
+          </ThemeProvider>
+        </SpotifyPlayerProvider>
       </body>
     </html>
   )

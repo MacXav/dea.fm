@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser, CurrentUser } from '@/lib/getCurrentUser'
 import DecorativeFloralBackground from '@/components/DecorativeFloralBackground'
+import { useSpotifyPlayer } from '@/components/SpotifyPlayerProvider'
 
 interface Post {
   id: string
@@ -27,7 +28,6 @@ export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const [activePlayerId, setActivePlayerId] = useState<string | null>(null)
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const canEdit = Boolean(currentUser?.can_edit)
@@ -42,6 +42,8 @@ export default function Feed() {
   const [savingEdit, setSavingEdit] = useState(false)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
+
+  const { setActiveTrack } = useSpotifyPlayer()
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -85,8 +87,15 @@ export default function Feed() {
     return post.uploaded_image_url || post.image_url || post.post_image_url || ''
   }
 
-  const togglePlayer = (postId: string) => {
-    setActivePlayerId((currentId) => (currentId === postId ? null : postId))
+  const playPost = (post: Post) => {
+    if (!post.song_id) return
+
+    setActiveTrack({
+      id: post.song_id,
+      title: post.title,
+      artist: post.artist,
+      albumArt: post.album_art,
+    })
   }
 
   const openPost = (post: Post) => {
@@ -223,10 +232,6 @@ export default function Feed() {
         currentPosts.filter((post) => post.id !== postId)
       )
 
-      if (activePlayerId === postId) {
-        setActivePlayerId(null)
-      }
-
       if (editingPostId === postId) {
         cancelEditing()
       }
@@ -258,7 +263,7 @@ export default function Feed() {
       <main className="relative z-10 min-h-screen">
         <div className="absolute inset-0 bg-black/16 pointer-events-none" />
 
-        <div className="relative z-10 px-4 py-8">
+        <div className="relative z-10 px-4 py-8 pb-48">
           <h1
             className="text-3xl font-bold text-center mb-6 text-white"
             style={{
@@ -326,7 +331,7 @@ export default function Feed() {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
-                      togglePlayer(post.id)
+                      playPost(post)
                     }}
                     className="relative group block w-full"
                     aria-label={`Play ${post.title} by ${post.artist} on Spotify`}
@@ -363,9 +368,7 @@ export default function Feed() {
                     </div>
 
                     <div className="absolute bottom-3 left-3 right-3 bg-black/60 text-white text-sm rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition">
-                      {activePlayerId === post.id
-                        ? 'Hide Spotify player'
-                        : 'Click to play on Spotify'}
+                      Play in site player
                     </div>
                   </button>
 
@@ -531,19 +534,6 @@ export default function Feed() {
                       </>
                     )}
                   </div>
-
-                  {activePlayerId === post.id && post.song_id && (
-                    <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-                      <iframe
-                        src={`https://open.spotify.com/embed/track/${post.song_id}?utm_source=generator`}
-                        width="100%"
-                        height="152"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        loading="lazy"
-                        className="rounded-xl"
-                      />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -577,14 +567,31 @@ export default function Feed() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-5 sm:p-6 min-w-0">
               <div className="min-w-0">
                 {selectedPost.album_art ? (
-                  <img
-                    src={selectedPost.album_art}
-                    alt={`${selectedPost.title} album cover`}
-                    className="w-full aspect-square object-cover"
-                    style={{
-                      borderRadius: 'var(--site-radius)',
-                    }}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => playPost(selectedPost)}
+                    className="relative block w-full group"
+                  >
+                    <img
+                      src={selectedPost.album_art}
+                      alt={`${selectedPost.title} album cover`}
+                      className="w-full aspect-square object-cover"
+                      style={{
+                        borderRadius: 'var(--site-radius)',
+                      }}
+                    />
+
+                    <div
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                      style={{
+                        borderRadius: 'var(--site-radius)',
+                      }}
+                    >
+                      <div className="bg-white/15 backdrop-blur-md border border-white/20 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl shadow-lg">
+                        ▶
+                      </div>
+                    </div>
+                  </button>
                 ) : (
                   <div
                     className="w-full aspect-square bg-white/10 flex items-center justify-center opacity-70"
@@ -597,16 +604,16 @@ export default function Feed() {
                 )}
 
                 {selectedPost.song_id && (
-                  <div className="mt-4">
-                    <iframe
-                      src={`https://open.spotify.com/embed/track/${selectedPost.song_id}?utm_source=generator`}
-                      width="100%"
-                      height="152"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      className="rounded-xl"
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => playPost(selectedPost)}
+                    className="mt-4 w-full border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+                    style={{
+                      borderRadius: 'var(--site-radius)',
+                    }}
+                  >
+                    Play in site player
+                  </button>
                 )}
               </div>
 
