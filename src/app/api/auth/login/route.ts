@@ -7,16 +7,21 @@ export async function GET(request: NextRequest) {
   const redirectUri =
     process.env.SPOTIFY_REDIRECT_URI || `${origin}/api/auth/callback`
 
-  if (!clientId || !redirectUri) {
-    console.error('[spotify login] Missing env vars:', {
-      hasClientId: Boolean(clientId),
-      redirectUri,
-    })
+  console.log('[spotify login] Env check:', {
+    hasClientId: Boolean(clientId),
+    redirectUri,
+    clientIdStart: clientId?.slice(0, 6),
+  })
 
+  if (!clientId) {
     return NextResponse.json(
       {
         success: false,
         error: 'Spotify login is not configured.',
+        debug: {
+          hasClientId: Boolean(clientId),
+          redirectUri,
+        },
       },
       { status: 500 }
     )
