@@ -357,18 +357,18 @@ export default function Feed() {
                     )}
 
                     <div
-                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                      className="absolute inset-0 bg-black/0 transition group-hover:bg-black/35"
                       style={{
                         borderRadius: 'var(--site-radius)',
                       }}
-                    >
-                      <div className="bg-white/15 backdrop-blur-md border border-white/20 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl shadow-lg">
-                        ▶
-                      </div>
+                    />
+
+                    <div className="absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/70 text-lg text-white shadow-lg backdrop-blur-md transition group-hover:scale-110 group-hover:bg-black/85 sm:h-14 sm:w-14 sm:text-xl">
+                      ▶
                     </div>
 
-                    <div className="absolute bottom-3 left-3 right-3 bg-black/60 text-white text-sm rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition">
-                      Play in site player
+                    <div className="absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-lg bg-black/60 px-3 py-2 text-left text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100 sm:text-sm">
+                      Play
                     </div>
                   </button>
 
@@ -582,14 +582,14 @@ export default function Feed() {
                     />
 
                     <div
-                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                      className="absolute inset-0 bg-black/0 transition group-hover:bg-black/35"
                       style={{
                         borderRadius: 'var(--site-radius)',
                       }}
-                    >
-                      <div className="bg-white/15 backdrop-blur-md border border-white/20 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl shadow-lg">
-                        ▶
-                      </div>
+                    />
+
+                    <div className="absolute bottom-4 right-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-black/70 text-xl text-white shadow-lg backdrop-blur-md transition group-hover:scale-110 group-hover:bg-black/85">
+                      ▶
                     </div>
                   </button>
                 ) : (
