@@ -1,0 +1,96 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { getAdminUserFromRequest } from '@/lib/adminAuth'
+
+export async function POST(request: NextRequest) {
+  try {
+    const adminUser = await getAdminUserFromRequest(request)
+
+    if (!adminUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized',
+        },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+
+    const {
+      song_id,
+      title,
+      artist,
+      album,
+      album_art,
+      genre,
+      year,
+      caption,
+      mood_tags,
+      image_url,
+      is_public,
+    } = body
+
+    if (!song_id || !title || !artist) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Missing required post fields.',
+        },
+        { status: 400 }
+      )
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('posts')
+      .insert({
+        user_id: adminUser.id,
+        song_id,
+        title,
+        artist,
+        album: album || '',
+        album_art: album_art || '',
+        genre: genre || '',
+        year: year || null,
+        caption: caption || '',
+        mood_tags: Array.isArray(mood_tags) ? mood_tags : [],
+        image_url: image_url || null,
+        is_public: is_public ?? true,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[server] Create post error:', error)
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+          code: error.code,
+          details: error.details,
+        },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      post: data,
+    })
+  } catch (error) {
+    console.error('[server] Create post crash:', error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Create post failed.',
+      },
+      { status: 500 }
+    )
+  }
+}
