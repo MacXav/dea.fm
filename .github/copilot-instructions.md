@@ -7,7 +7,7 @@
 - [x] Scaffold the Project
 	<!-- Next.js project created with TypeScript, Tailwind CSS, ESLint, App Router -->
 
-- [ ] Customize the Project
+- [x] Customize the Project
 	<!--
 	Verify that all previous steps have been marked as completed.
 	Develop a plan to modify codebase according to user requirements.

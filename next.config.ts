@@ -1,7 +1,17 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.scdn.co',
+      },
+    ],
+  },
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+  allowedDevOrigins: [
+    'astrology-dupe-depraved.ngrok-free.dev'
+  ],
+}
 
-export default nextConfig;
+module.exports = nextConfig
