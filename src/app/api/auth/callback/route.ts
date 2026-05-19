@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import {
+  adminSessionCookieName,
+  createAdminSessionToken,
+} from '@/lib/adminAuth'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -71,13 +75,22 @@ export async function GET(request: NextRequest) {
     }
 
     const spotifyId = spotifyProfile.id
-    const email = spotifyProfile.email || ''
+    const email = String(spotifyProfile.email || '').toLowerCase()
     const displayName = spotifyProfile.display_name || spotifyId
     const avatarUrl = spotifyProfile.images?.[0]?.url || null
 
-    const canEdit =
-      email.toLowerCase() === 'dea.gouel5@gmail.com' ||
-      spotifyId === 'dea.gouel5'
+    console.log('[spotify callback] Spotify profile:', {
+      spotifyId,
+      email,
+      displayName,
+    })
+
+    const allowedAdminEmails = [
+      'dea.gouel5@gmail.com',
+      'xaviermacdonald5@gmail.com',
+    ]
+
+    const canEdit = allowedAdminEmails.includes(email)
 
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
@@ -111,7 +124,7 @@ export async function GET(request: NextRequest) {
     response.cookies.set('user_id', user.id, {
       httpOnly: false,
       sameSite: 'lax',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     })
@@ -119,7 +132,7 @@ export async function GET(request: NextRequest) {
     response.cookies.set('spotify_id', spotifyId, {
       httpOnly: false,
       sameSite: 'lax',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     })
@@ -127,7 +140,17 @@ export async function GET(request: NextRequest) {
     response.cookies.set('can_edit', String(canEdit), {
       httpOnly: false,
       sameSite: 'lax',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    })
+
+    const adminToken = createAdminSessionToken(user.id)
+
+    response.cookies.set(adminSessionCookieName, adminToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     })
