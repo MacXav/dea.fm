@@ -316,12 +316,7 @@ export default function ProfilePage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p
-                          className="mb-2 text-sm font-semibold uppercase tracking-[0.35em]"
-                          style={{ color: 'var(--site-accent)' }}
-                        >
-                          dea.fm
-                        </p>
+
 
                         <h1
                           className="break-words text-5xl font-black tracking-tight text-white sm:text-6xl"
