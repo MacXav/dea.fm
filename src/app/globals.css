@@ -1,19 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09002b;
-  --foreground: #fff7ff;
-
-  --site-accent: #ff66cc;
-  --site-accent-2: #66ffff;
-  --site-accent-3: #fff06a;
-
-  --site-bg: #09002b;
-  --site-card: rgba(26, 7, 82, 0.82);
-  --site-text: #fff7ff;
-  --site-muted: rgba(255, 247, 255, 0.72);
-  --site-border: rgba(255, 255, 255, 0.22);
-  --site-radius: 10px;
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 @theme inline {
@@ -23,78 +12,27 @@
   --font-mono: var(--font-geist-mono);
 }
 
-html,
-body {
-  min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
 }
 
 body {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(255, 102, 204, 0.28), transparent 24%),
-    radial-gradient(circle at 82% 12%, rgba(102, 255, 255, 0.2), transparent 22%),
-    radial-gradient(circle at 70% 80%, rgba(255, 240, 106, 0.13), transparent 24%),
-    linear-gradient(135deg, #09002b 0%, #21004d 48%, #030012 100%);
-  color: var(--site-text);
+  background: var(--background);
+  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 2000s blog texture */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  opacity: 0.24;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-  background-size: 22px 22px;
+:root {
+  --site-accent: #a855f7;
+  --site-bg: #111827;
+  --site-card: rgba(255, 255, 255, 0.08);
+  --site-text: #ffffff;
+  --site-radius: 1rem;
 }
 
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.035) 0px,
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px,
-      transparent 4px
-    );
-  mix-blend-mode: screen;
-  opacity: 0.45;
-}
-
-::selection {
-  background: #ff66cc;
-  color: #ffffff;
-}
-
-a {
-  color: inherit;
-}
-
-button,
-input,
-textarea,
-select {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-input,
-textarea,
-select {
-  border-style: inset;
-}
-
-/* Existing theme helpers */
 .theme-bg {
   background: var(--site-bg);
   color: var(--site-text);
@@ -117,111 +55,9 @@ select {
   border-color: var(--site-accent);
 }
 
-/* Retro/2000s utility classes you can use anywhere */
-.retro-card {
-  border: 2px solid var(--site-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.22)),
-    var(--site-card);
-  box-shadow:
-    0 0 0 1px rgba(255, 102, 204, 0.22),
-    0 0 24px rgba(102, 255, 255, 0.08),
-    0 14px 30px rgba(0, 0, 0, 0.45);
-}
-
-.retro-panel-title {
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: linear-gradient(90deg, #ff66cc, #7c3aed, #00d5ff);
-  color: white;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-shadow: 1px 1px 0 #000;
-}
-
-.retro-title {
-  color: #ffffff;
-  text-shadow:
-    2px 2px 0 #ff66cc,
-    4px 4px 0 #000000,
-    0 0 18px rgba(102, 255, 255, 0.45);
-}
-
-.retro-link {
-  color: #66ffff;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 3px;
-  text-shadow: 1px 1px 0 #000;
-}
-
-.retro-link:hover {
-  color: #fff06a;
-}
-
-.retro-button {
-  border: 2px outset rgba(255, 255, 255, 0.55);
-  background: linear-gradient(180deg, #ff9de2 0%, #ff66cc 45%, #7c3aed 100%);
-  color: white;
-  font-weight: 900;
-  text-shadow: 1px 1px 0 #000;
-  box-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.35),
-    0 4px 0 rgba(0, 0, 0, 0.35);
-}
-
-.retro-button:hover {
-  filter: brightness(1.1);
-}
-
-.retro-button:active {
-  border-style: inset;
-  transform: translateY(2px);
-  box-shadow:
-    inset 1px 1px 4px rgba(0, 0, 0, 0.45),
-    0 1px 0 rgba(0, 0, 0, 0.35);
-}
-
-.retro-badge {
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.16)),
-    rgba(255, 255, 255, 0.1);
-  color: #fff7ff;
-  box-shadow: inset 0 0 0 1px rgba(255, 102, 204, 0.16);
-}
-
-.retro-dotted {
-  border: 2px dotted rgba(255, 255, 255, 0.35);
-}
-
-.retro-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #ff66cc #14003a;
-}
-
-.retro-marquee {
-  border-top: 1px dashed rgba(255, 255, 255, 0.3);
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
-  background: rgba(0, 0, 0, 0.28);
-  color: #fff06a;
-  text-shadow: 1px 1px 0 #000;
-}
-
-/* WebKit scrollbars */
-::-webkit-scrollbar {
-  width: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: #120035;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #ff66cc, #7c3aed);
-  border: 2px solid #120035;
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #fff06a, #ff66cc);
+html,
+body {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
