@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser, CurrentUser } from '@/lib/getCurrentUser'
 import DecorativeFloralBackground from '@/components/DecorativeFloralBackground'
@@ -39,6 +39,10 @@ export default function Feed() {
   const [editYear, setEditYear] = useState('')
   const [editMood, setEditMood] = useState('')
   const [editCaption, setEditCaption] = useState('')
+  const [editImageUrl, setEditImageUrl] = useState('')
+  const [editImageFile, setEditImageFile] = useState<File | null>(null)
+  const [removeImage, setRemoveImage] = useState(false)
+
   const [savingEdit, setSavingEdit] = useState(false)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
@@ -84,8 +88,26 @@ export default function Feed() {
   })
 
   const getUploadedImage = (post: Post) => {
-    return post.uploaded_image_url || post.image_url || post.post_image_url || ''
+    return post.image_url || post.uploaded_image_url || post.post_image_url || ''
   }
+
+  const editImagePreview = useMemo(() => {
+    if (removeImage) return ''
+
+    if (editImageFile) {
+      return URL.createObjectURL(editImageFile)
+    }
+
+    return editImageUrl
+  }, [editImageFile, editImageUrl, removeImage])
+
+  useEffect(() => {
+    return () => {
+      if (editImagePreview && editImageFile) {
+        URL.revokeObjectURL(editImagePreview)
+      }
+    }
+  }, [editImagePreview, editImageFile])
 
   const playPost = (post: Post) => {
     if (!post.song_id) return
@@ -114,6 +136,9 @@ export default function Feed() {
     setEditYear(post.year ? String(post.year) : '')
     setEditMood(post.mood_tags?.join(', ') || '')
     setEditCaption(post.caption || '')
+    setEditImageUrl(getUploadedImage(post))
+    setEditImageFile(null)
+    setRemoveImage(false)
     setErrorMessage('')
   }
 
@@ -123,8 +148,45 @@ export default function Feed() {
     setEditYear('')
     setEditMood('')
     setEditCaption('')
+    setEditImageUrl('')
+    setEditImageFile(null)
+    setRemoveImage(false)
     setSavingEdit(false)
     setErrorMessage('')
+  }
+
+  const uploadEditedImage = async (postId: string) => {
+    if (removeImage) {
+      return null
+    }
+
+    if (!editImageFile) {
+      return editImageUrl || null
+    }
+
+    const safeFileName = editImageFile.name
+      .toLowerCase()
+      .replace(/[^a-z0-9.-]/g, '-')
+
+    const filePath = `post-images/${postId}-${Date.now()}-${safeFileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('post-images')
+      .upload(filePath, editImageFile, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error('[browser] Edit image upload error:', uploadError)
+      throw new Error(uploadError.message || 'Could not upload image.')
+    }
+
+    const { data } = supabase.storage
+      .from('post-images')
+      .getPublicUrl(filePath)
+
+    return data.publicUrl
   }
 
   const saveEdit = async (postId: string) => {
@@ -145,6 +207,8 @@ export default function Feed() {
     try {
       setSavingEdit(true)
 
+      const imageUrl = await uploadEditedImage(postId)
+
       const updatedPost = {
         genre: editGenre,
         year: parsedYear,
@@ -153,6 +217,7 @@ export default function Feed() {
           .split(',')
           .map((tag) => tag.trim())
           .filter(Boolean),
+        image_url: imageUrl,
       }
 
       const response = await fetch('/api/posts/update', {
@@ -189,7 +254,11 @@ export default function Feed() {
       cancelEditing()
     } catch (error) {
       console.error('[browser] Save edit error:', error)
-      setErrorMessage('Something went wrong while updating the post.')
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong while updating the post.'
+      )
       setSavingEdit(false)
     }
   }
@@ -441,6 +510,67 @@ export default function Feed() {
                           />
                         </div>
 
+                        <div>
+                          <label className="block text-sm opacity-70 mb-1">
+                            Custom Post Photo
+                          </label>
+
+                          {editImagePreview ? (
+                            <div className="mb-3 overflow-hidden border border-white/10 rounded-lg">
+                              <img
+                                src={editImagePreview}
+                                alt="Current post upload preview"
+                                className="w-full max-h-56 object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="mb-3 rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/55">
+                              No custom post photo selected.
+                            </div>
+                          )}
+
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null
+                              setEditImageFile(file)
+                              setRemoveImage(false)
+                            }}
+                            className="w-full rounded-lg border border-white/10 bg-white/10 p-2 text-sm text-white file:mr-3 file:rounded-md file:border-0 file:bg-white/15 file:px-3 file:py-1.5 file:text-white"
+                          />
+
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditImageFile(null)
+                                setRemoveImage(true)
+                              }}
+                              className="flex-1 rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm text-red-100 transition hover:bg-red-500/20"
+                            >
+                              Remove Photo
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditImageFile(null)
+                                setRemoveImage(false)
+                                setEditImageUrl(getUploadedImage(post))
+                              }}
+                              className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10"
+                            >
+                              Reset Photo
+                            </button>
+                          </div>
+
+                          <p className="mt-2 text-xs text-white/45">
+                            This only changes the custom uploaded post photo.
+                            The Spotify album cover stays the same.
+                          </p>
+                        </div>
+
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -498,6 +628,16 @@ export default function Feed() {
                           <p className="mt-4 line-clamp-3 break-words opacity-90">
                             {post.caption}
                           </p>
+                        )}
+
+                        {getUploadedImage(post) && (
+                          <div className="mt-4 overflow-hidden border border-white/10 rounded-lg">
+                            <img
+                              src={getUploadedImage(post)}
+                              alt={`${post.title} custom uploaded post photo`}
+                              className="w-full max-h-48 object-cover"
+                            />
+                          </div>
                         )}
 
                         {post.created_at && (

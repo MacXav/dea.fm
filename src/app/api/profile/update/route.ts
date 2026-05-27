@@ -10,70 +10,46 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized.',
         },
         { status: 401 }
       )
     }
 
-    const body = await request.json()
-
     const {
-      spotify_id,
-      display_name,
-      avatar_url,
-      song_of_day_post_id,
-    } = body
+      post_id,
+      genre,
+      year,
+      caption,
+      mood_tags,
+      image_url,
+    } = await request.json()
 
-    if (!spotify_id) {
+    if (!post_id) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing spotify_id.',
+          error: 'Missing post_id.',
         },
         { status: 400 }
       )
     }
 
-    const updates: {
-      display_name?: string
-      avatar_url?: string | null
-      song_of_day_post_id?: string | null
-    } = {}
-
-    if (display_name !== undefined) {
-      if (!String(display_name).trim()) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Display name is required.',
-          },
-          { status: 400 }
-        )
-      }
-
-      updates.display_name = String(display_name).trim()
-    }
-
-    if (avatar_url !== undefined) {
-      updates.avatar_url = avatar_url ? String(avatar_url).trim() : null
-    }
-
-    if (song_of_day_post_id !== undefined) {
-      updates.song_of_day_post_id = song_of_day_post_id || null
-    }
-
     const { data, error } = await supabaseAdmin
-      .from('users')
-      .update(updates)
-      .eq('spotify_id', spotify_id)
-      .select(
-        'id, spotify_id, display_name, email, avatar_url, can_edit, song_of_day_post_id'
-      )
+      .from('posts')
+      .update({
+        genre: genre || '',
+        year: year || null,
+        caption: caption || '',
+        mood_tags: Array.isArray(mood_tags) ? mood_tags : [],
+        image_url: image_url || null,
+      })
+      .eq('id', post_id)
+      .select()
       .single()
 
     if (error) {
-      console.error('[server] Update profile error:', error)
+      console.error('[posts update] Supabase error:', error)
 
       return NextResponse.json(
         {
@@ -88,16 +64,18 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      profile: data,
+      post: data,
     })
   } catch (error) {
-    console.error('[server] Update profile crash:', error)
+    console.error('[posts update] Unexpected error:', error)
 
     return NextResponse.json(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Update profile failed.',
+          error instanceof Error
+            ? error.message
+            : 'Something went wrong while updating the post.',
       },
       { status: 500 }
     )
