@@ -16,14 +16,8 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const {
-      post_id,
-      genre,
-      year,
-      caption,
-      mood_tags,
-      image_url,
-    } = await request.json()
+    const { post_id, genre, year, caption, mood_tags, image_url } =
+      await request.json()
 
     if (!post_id) {
       return NextResponse.json(

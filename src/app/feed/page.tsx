@@ -18,10 +18,8 @@ interface Post {
   caption: string
   mood_tags: string[]
   created_at: string
-
   image_url?: string | null
   uploaded_image_url?: string | null
-  post_image_url?: string | null
 }
 
 export default function Feed() {
@@ -88,7 +86,7 @@ export default function Feed() {
   })
 
   const getUploadedImage = (post: Post) => {
-    return post.image_url || post.uploaded_image_url || post.post_image_url || ''
+    return post.image_url || post.uploaded_image_url || ''
   }
 
   const editImagePreview = useMemo(() => {
@@ -545,6 +543,7 @@ export default function Feed() {
                               type="button"
                               onClick={() => {
                                 setEditImageFile(null)
+                                setEditImageUrl('')
                                 setRemoveImage(true)
                               }}
                               className="flex-1 rounded-lg border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm text-red-100 transition hover:bg-red-500/20"
