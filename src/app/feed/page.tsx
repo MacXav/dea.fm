@@ -19,7 +19,6 @@ interface Post {
   mood_tags: string[]
   created_at: string
   image_url?: string | null
-  uploaded_image_url?: string | null
 }
 
 export default function Feed() {
@@ -86,7 +85,7 @@ export default function Feed() {
   })
 
   const getUploadedImage = (post: Post) => {
-    return post.image_url || post.uploaded_image_url || ''
+    return post.image_url || ''
   }
 
   const editImagePreview = useMemo(() => {

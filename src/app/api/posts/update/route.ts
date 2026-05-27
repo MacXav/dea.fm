@@ -39,7 +39,6 @@ export async function PATCH(request: NextRequest) {
         caption: caption || '',
         mood_tags: Array.isArray(mood_tags) ? mood_tags : [],
         image_url: cleanImageUrl,
-        uploaded_image_url: cleanImageUrl,
       })
       .eq('id', post_id)
       .select()
