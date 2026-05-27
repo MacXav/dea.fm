@@ -10,13 +10,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized.',
         },
         { status: 401 }
       )
     }
-
-    const body = await request.json()
 
     const {
       post_id,
@@ -24,7 +22,8 @@ export async function PATCH(request: NextRequest) {
       year,
       caption,
       mood_tags,
-    } = body
+      image_url,
+    } = await request.json()
 
     if (!post_id) {
       return NextResponse.json(
@@ -36,6 +35,8 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
+    const cleanImageUrl = image_url || null
+
     const { data, error } = await supabaseAdmin
       .from('posts')
       .update({
@@ -43,13 +44,16 @@ export async function PATCH(request: NextRequest) {
         year: year || null,
         caption: caption || '',
         mood_tags: Array.isArray(mood_tags) ? mood_tags : [],
+        image_url: cleanImageUrl,
+        uploaded_image_url: cleanImageUrl,
+        post_image_url: cleanImageUrl,
       })
       .eq('id', post_id)
       .select()
       .single()
 
     if (error) {
-      console.error('[server] Update post error:', error)
+      console.error('[posts update] Supabase error:', error)
 
       return NextResponse.json(
         {
@@ -67,13 +71,15 @@ export async function PATCH(request: NextRequest) {
       post: data,
     })
   } catch (error) {
-    console.error('[server] Update post crash:', error)
+    console.error('[posts update] Unexpected error:', error)
 
     return NextResponse.json(
       {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Update post failed.',
+          error instanceof Error
+            ? error.message
+            : 'Something went wrong while updating the post.',
       },
       { status: 500 }
     )
