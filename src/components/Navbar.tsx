@@ -27,6 +27,10 @@ export default function Navbar() {
       return pathname === '/genres' || pathname.startsWith('/genres/')
     }
 
+    if (href === '/artists') {
+      return pathname === '/artists' || pathname.startsWith('/artists/')
+    }
+
     return pathname === href
   }
 
@@ -77,6 +81,10 @@ export default function Navbar() {
 
             <Link href="/genres" className={linkClass('/genres')}>
               Genres
+            </Link>
+
+            <Link href="/artists" className={linkClass('/artists')}>
+              Artists
             </Link>
 
             <Link href="/profile" className={linkClass('/profile')}>
