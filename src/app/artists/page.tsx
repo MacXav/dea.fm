@@ -96,7 +96,7 @@ export default function ArtistsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search artists..."
-            className="mb-10 block w-full max-w-xl border border-white/15 bg-black/35 px-4 py-3 text-white placeholder-white/60 outline-none backdrop-blur-md focus:ring-2"
+            className="mx-auto mb-10 block w-full max-w-xl border border-white/15 bg-black/35 px-4 py-3 text-center text-white placeholder-white/60 outline-none backdrop-blur-md focus:ring-2"
             style={{
               borderRadius: 'var(--site-radius)',
             }}
