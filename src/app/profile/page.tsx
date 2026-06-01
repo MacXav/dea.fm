@@ -7,6 +7,7 @@ import { getCurrentUser, CurrentUser } from '@/lib/getCurrentUser'
 import DecorativeFloralBackground from '@/components/DecorativeFloralBackground'
 
 const DEA_SPOTIFY_ID = 'dea.gouel5'
+const DEA_SPOTIFY_URL = `https://open.spotify.com/user/${DEA_SPOTIFY_ID}`
 
 interface DeaProfile {
   id: string
@@ -316,8 +317,6 @@ export default function ProfilePage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-
-
                         <h1
                           className="break-words text-5xl font-black tracking-tight text-white sm:text-6xl"
                           style={{
@@ -329,18 +328,32 @@ export default function ProfilePage() {
                         </h1>
                       </div>
 
-                      {canEdit && !editingProfile && (
-                        <button
-                          type="button"
-                          onClick={startEditingProfile}
-                          className="w-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
+                      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                        <a
+                          href={DEA_SPOTIFY_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-full items-center justify-center border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
                           style={{
                             borderRadius: 'var(--site-radius)',
                           }}
                         >
-                          Edit Profile
-                        </button>
-                      )}
+                          View Dea&apos;s Spotify
+                        </a>
+
+                        {canEdit && !editingProfile && (
+                          <button
+                            type="button"
+                            onClick={startEditingProfile}
+                            className="w-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
+                            style={{
+                              borderRadius: 'var(--site-radius)',
+                            }}
+                          >
+                            Edit Profile
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <p
