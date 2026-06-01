@@ -3,16 +3,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import DecorativeFloralBackground from '@/components/DecorativeFloralBackground'
+import ArtistFloralBackground from '@/components/DecorativeFloralBackground'
 
 interface Post {
   id: string
-  artist: string
-}
-
-interface ArtistSummary {
-  name: string
-  count: number
+  artist: string | null
 }
 
 export default function ArtistsPage() {
@@ -46,22 +41,21 @@ export default function ArtistsPage() {
   }, [])
 
   const artists = useMemo(() => {
-    const artistMap = new Map<string, ArtistSummary>()
+    const artistMap = new Map<string, { name: string; count: number }>()
 
     posts.forEach((post) => {
-      const artistName = post.artist?.trim()
+      const artist = post.artist?.trim()
+      if (!artist) return
 
-      if (!artistName) return
+      const normalizedArtist = artist.toLowerCase()
 
-      const normalized = artistName.toLowerCase()
-
-      const existing = artistMap.get(normalized)
+      const existing = artistMap.get(normalizedArtist)
 
       if (existing) {
         existing.count += 1
       } else {
-        artistMap.set(normalized, {
-          name: artistName,
+        artistMap.set(normalizedArtist, {
+          name: artist,
           count: 1,
         })
       }
@@ -72,9 +66,15 @@ export default function ArtistsPage() {
     )
   }, [posts])
 
-  const filteredArtists = artists.filter((artist) =>
-    artist.name.toLowerCase().includes(search.toLowerCase().trim())
-  )
+  const filteredArtists = useMemo(() => {
+    const query = search.toLowerCase().trim()
+
+    if (!query) return artists
+
+    return artists.filter((artist) =>
+      artist.name.toLowerCase().includes(query)
+    )
+  }, [artists, search])
 
   return (
     <div
@@ -85,100 +85,85 @@ export default function ArtistsPage() {
       }}
     >
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <DecorativeFloralBackground />
+        <ArtistFloralBackground />
       </div>
 
       <main className="relative z-10 min-h-screen">
-        <div className="absolute inset-0 bg-black/16 pointer-events-none" />
+        <div className="absolute inset-0 bg-black/22 pointer-events-none" />
 
-        <div className="relative z-10 px-4 py-8 pb-48">
-          <div className="mx-auto max-w-5xl">
-            <div className="text-center mb-8">
-              <h1
-                className="text-3xl sm:text-5xl font-bold text-white"
-                style={{
-                  textShadow:
-                    '0 4px 18px rgba(0,0,0,0.95), 0 0 2px rgba(255,255,255,0.55)',
-                }}
-              >
-                Artists
-              </h1>
+        <div className="relative z-10 px-4 py-10 sm:px-8 md:px-10">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search artists..."
+            className="mb-10 block w-full max-w-xl border border-white/15 bg-black/35 px-4 py-3 text-white placeholder-white/60 outline-none backdrop-blur-md focus:ring-2"
+            style={{
+              borderRadius: 'var(--site-radius)',
+            }}
+          />
 
-              <p
-                className="mt-3 text-white/70"
-                style={{
-                  textShadow: '0 3px 12px rgba(0,0,0,0.95)',
-                }}
-              >
-                Browse every artist posted in Dea&apos;s audio archives.
-              </p>
-            </div>
-
-            {errorMessage && (
-              <div className="w-full max-w-2xl mx-auto mb-6 rounded-xl bg-red-500/10 border border-red-400/20 text-red-200 p-3 text-sm backdrop-blur-md">
-                {errorMessage}
-              </div>
-            )}
-
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search artists..."
-              className="w-full max-w-2xl mx-auto block p-3 mb-8 outline-none border border-white/10 bg-black/35 text-white placeholder-white/60 focus:ring-2 backdrop-blur-md"
+          {errorMessage && (
+            <p
+              className="mb-8 text-red-100 text-lg font-semibold"
               style={{
-                borderRadius: 'var(--site-radius)',
+                textShadow: '0 3px 12px rgba(0,0,0,0.95)',
               }}
-            />
+            >
+              {errorMessage}
+            </p>
+          )}
 
-            {loading && (
-              <div
-                className="text-center text-white/90 border border-white/10 p-6 max-w-2xl mx-auto backdrop-blur-md"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.35)',
-                  borderRadius: 'var(--site-radius)',
-                }}
-              >
-                Loading artists...
-              </div>
-            )}
+          {loading && (
+            <p
+              className="text-white/90 text-xl font-medium"
+              style={{
+                textShadow: '0 3px 12px rgba(0,0,0,0.95)',
+              }}
+            >
+              Loading artists...
+            </p>
+          )}
 
-            {!loading && filteredArtists.length === 0 && (
-              <div
-                className="text-center text-white/90 border border-white/10 p-6 max-w-2xl mx-auto backdrop-blur-md"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.35)',
-                  borderRadius: 'var(--site-radius)',
-                }}
-              >
-                No artists found.
-              </div>
-            )}
+          {!loading && artists.length === 0 && (
+            <p
+              className="text-white/90 text-xl font-medium"
+              style={{
+                textShadow: '0 3px 12px rgba(0,0,0,0.95)',
+              }}
+            >
+              No artists found yet.
+            </p>
+          )}
 
-            {!loading && filteredArtists.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredArtists.map((artist) => (
-                  <Link
-                    key={artist.name.toLowerCase()}
-                    href={`/artists/${encodeURIComponent(artist.name)}`}
-                    className="group border border-white/10 p-5 shadow-lg backdrop-blur-sm transition hover:-translate-y-1 hover:bg-white/10"
-                    style={{
-                      background:
-                        'color-mix(in srgb, var(--site-card) 74%, rgba(0,0,0,0.35))',
-                      borderRadius: 'var(--site-radius)',
-                    }}
-                  >
-                    <h2 className="text-xl font-bold text-white break-words group-hover:underline">
-                      {artist.name}
-                    </h2>
+          {!loading && artists.length > 0 && filteredArtists.length === 0 && (
+            <p
+              className="text-white/90 text-xl font-medium"
+              style={{
+                textShadow: '0 3px 12px rgba(0,0,0,0.95)',
+              }}
+            >
+              No artists match your search.
+            </p>
+          )}
 
-                    <p className="mt-2 text-sm text-white/60">
-                      {artist.count} {artist.count === 1 ? 'post' : 'posts'}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          {!loading && filteredArtists.length > 0 && (
+            <div className="flex flex-wrap gap-x-8 gap-y-6 sm:gap-x-10 sm:gap-y-8 pb-16">
+              {filteredArtists.map((artist) => (
+                <Link
+                  key={artist.name.toLowerCase()}
+                  href={`/artists/${encodeURIComponent(artist.name)}`}
+                  className="text-3xl sm:text-4xl md:text-5xl font-black text-white transition hover:scale-105 hover:text-orange-200"
+                  style={{
+                    textShadow:
+                      '0 5px 18px rgba(0,0,0,1), 0 0 2px rgba(255,255,255,0.75)',
+                    WebkitTextStroke: '0.5px rgba(0,0,0,0.55)',
+                  }}
+                >
+                  {artist.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
